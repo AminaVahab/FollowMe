@@ -30,10 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SIGNUP extends AppCompatActivity {
-    private EditText mEmail, mPass, mPhone , mName;
+    private EditText mEmail, mPass, mPhone, mName;
     private Button mRegister;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mFirebaseAuthStateListnener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,13 +83,14 @@ public class SIGNUP extends AppCompatActivity {
 
 
                             DatabaseReference current_user = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
-                            Map newPost = new HashMap();
-                            newPost.put("Name",name);
-                            newPost.put("Phone",phone);
-                            newPost.put("Group",group);
+                            Map data = new HashMap();
+                            data.put("Name", name);
+                            data.put("Phone", phone);
+                            data.put("Group", group);
+                            data.put("email", email);
 
 
-                            current_user.setValue(newPost);
+                            current_user.setValue(data);
 
                         }
                     }
