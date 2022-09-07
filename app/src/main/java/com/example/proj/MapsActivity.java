@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,14 +26,25 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.proj.databinding.ActivityMapsBinding;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
+    ArrayList<UserLocation> users;
 
     LocationManager locationManager;
     LocationListener locationListener;
@@ -79,67 +92,117 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.clear();
 
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        ref.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Group").addValueEventListener(new ValueEventListener() {
             @Override
-            public void onLocationChanged(@NonNull Location location) {
-                mMap.clear();
-                LatLng userloc = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(userloc).title("our location"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userloc, 10));
-                Toast.makeText(MapsActivity.this, location.toString(), Toast.LENGTH_LONG).show();
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String groupId = (String) snapshot.getValue();
+                ref.child("Groups").child(groupId).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Map<String, Map<String, String>> data = (Map<String, Map<String, String>>) snapshot.getValue();
+                        for (Map.Entry<String, Map<String, String>> entry : data.entrySet()) {
+                            ref.child("Users").child(entry.getKey()).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    Map<String, String> data = (Map<String, String>) snapshot.getValue();
+                                    Log.d("TAG", "onDataChange: " + data);
+                                    try {
+                                        UserLocation userLocation = new UserLocation();
+                                        userLocation.setName(data.get("Name"));
+                                        userLocation.setLatitude(Double.parseDouble(data.get("Latitude")));
+                                        userLocation.setLongitude(Double.parseDouble(data.get("Longitude")));
+                                        Log.d("TAG", "onDataChange: " + userLocation);
+                                        LatLng latLng = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+                                        mMap.addMarker(new MarkerOptions().position(latLng).title(userLocation.getName()));
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+                                    } catch (Exception e) {
+                                        System.out.println(e);
+                                    }
+                                }
 
-                //reverse geo coding
-                Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                try {
-                    List<Address> listAddresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (listAddresses != null && listAddresses.size() > 0) {
-                        String retstr = listAddresses.get(0).toString();
-                        Log.i("placeinfo", listAddresses.get(0).toString());
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
 
-                        String address = "";
-                        if (listAddresses.get(0).getSubThoroughfare() != null) {
-                            address += listAddresses.get(0).getSubThoroughfare() + ", ";
+                                }
+                            });
                         }
-                        if (listAddresses.get(0).getSubThoroughfare() != null) {
-                            address += listAddresses.get(0).getSubThoroughfare() + ", ";
-                        }
-                        if (listAddresses.get(0).getSubLocality() != null) {
-                            address += listAddresses.get(0).getSubLocality() + ", ";
-                        }
-                        if (listAddresses.get(0).getPostalCode() != null) {
-                            address += listAddresses.get(0).getPostalCode() + ", ";
-                        }
-                        if (listAddresses.get(0).getCountryName() != null) {
-                            address += listAddresses.get(0).getCountryName() + ", ";
-                        }
-                        Toast.makeText(MapsActivity.this, address, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        };
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        else {
-            try {
-                mMap.clear();
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, locationListener);
-                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                LatLng userloc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(userloc).title("our location"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userloc, 10));
+        });
 
-            } catch (Exception e) {
-                System.out.println("an exception has occured");
-                System.out.println(e);
-            }
-        }
+//        Log.d("TAG", "onMapReady: " + users);
+//        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+//        locationListener = new LocationListener() {
+//            @Override
+//            public void onLocationChanged(@NonNull Location location) {
+//                mMap.clear();
+//                LatLng userloc = new LatLng(location.getLatitude(), location.getLongitude());
+//                mMap.addMarker(new MarkerOptions().position(userloc).title("our location"));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userloc, 10));
+//                Toast.makeText(MapsActivity.this, location.toString(), Toast.LENGTH_LONG).show();
+//
+//                //reverse geo coding
+//                Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+//                try {
+//                    List<Address> listAddresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+//                    if (listAddresses != null && listAddresses.size() > 0) {
+//                        String retstr = listAddresses.get(0).toString();
+//                        Log.i("placeinfo", listAddresses.get(0).toString());
+//
+//                        String address = "";
+//                        if (listAddresses.get(0).getSubThoroughfare() != null) {
+//                            address += listAddresses.get(0).getSubThoroughfare() + ", ";
+//                        }
+//                        if (listAddresses.get(0).getSubThoroughfare() != null) {
+//                            address += listAddresses.get(0).getSubThoroughfare() + ", ";
+//                        }
+//                        if (listAddresses.get(0).getSubLocality() != null) {
+//                            address += listAddresses.get(0).getSubLocality() + ", ";
+//                        }
+//                        if (listAddresses.get(0).getPostalCode() != null) {
+//                            address += listAddresses.get(0).getPostalCode() + ", ";
+//                        }
+//                        if (listAddresses.get(0).getCountryName() != null) {
+//                            address += listAddresses.get(0).getCountryName() + ", ";
+//                        }
+//                        Toast.makeText(MapsActivity.this, address, Toast.LENGTH_SHORT).show();
+//
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        };
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        } else {
+//            try {
+//                mMap.clear();
+//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, locationListener);
+//                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                LatLng userloc = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+//                mMap.addMarker(new MarkerOptions().position(userloc).title("our location"));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userloc, 10));
+//
+//            } catch (Exception e) {
+//                System.out.println("an exception has occured");
+//                System.out.println(e);
+//            }
+//        }
     }
 }
