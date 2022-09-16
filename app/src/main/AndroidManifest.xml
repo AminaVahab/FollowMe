@@ -30,11 +30,6 @@
             android:name=".creategrp"
             android:exported="false" />
         <activity
-            android:name=".creategroup"
-            android:exported="false"
-            android:label="@string/title_activity_creategroup"
-            android:theme="@style/Theme.PROJ" />
-        <activity
             android:name=".Home"
             android:exported="false" />
         <!--
