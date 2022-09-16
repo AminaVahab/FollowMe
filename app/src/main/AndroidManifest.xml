@@ -24,16 +24,11 @@
             android:name=".viewmap"
             android:exported="false" />
         <activity
-            android:name=".joingrp"
+            android:name=".JoinGroupActivity"
             android:exported="false" />
         <activity
             android:name=".creategrp"
             android:exported="false" />
-        <activity
-            android:name=".creategroup"
-            android:exported="false"
-            android:label="@string/title_activity_creategroup"
-            android:theme="@style/Theme.PROJ" />
         <activity
             android:name=".Home"
             android:exported="false" />
@@ -57,10 +52,10 @@
             android:exported="false"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".SIGNUP"
+            android:name=".SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".LOGIN"
+            android:name=".LoginActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
