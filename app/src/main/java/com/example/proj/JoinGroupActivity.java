@@ -19,7 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
-public class joingrp extends AppCompatActivity {
+public class JoinGroupActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     EditText jcode;
     Button join;
@@ -29,7 +29,7 @@ public class joingrp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_joingrp);
         jcode = (EditText)findViewById(R.id.t1);
-        join = (Button)findViewById(R.id.button3);
+        join = (Button)findViewById(R.id.track_location);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
         final String uid = firebaseUser.getUid();
@@ -67,7 +67,7 @@ public class joingrp extends AppCompatActivity {
                 DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
                 groupRef.child("Group").setValue(code);
 
-                Intent intent = new Intent(joingrp.this, MainActivity.class);
+                Intent intent = new Intent(JoinGroupActivity.this, Home.class);
                 startActivity(intent);
 
                 Toast.makeText(getApplicationContext(),"Group Joined",Toast.LENGTH_SHORT).show();

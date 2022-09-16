@@ -6,34 +6,46 @@
     android:layout_height="match_parent"
     android:background="@drawable/wall"
     android:gravity="center"
+    android:padding="40dp"
     tools:context=".Home">
 
     <Button
-        android:id="@+id/button2"
-        android:layout_width="166dp"
-        android:layout_height="63dp"
-        android:layout_below="@id/button1"
-        android:layout_marginTop="36dp"
-        android:textStyle="bold"
+        android:id="@+id/create_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:fontFamily="@font/alegreya_sc"
-        android:text="Join Group" />
-
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="166dp"
-        android:layout_height="63dp"
-        android:fontFamily="@font/alegreya_sc"
-        android:text="Create Group"
+        android:text="@string/create_group"
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/button3"
-        android:layout_width="164dp"
-        android:layout_height="59dp"
-        android:layout_below="@id/button2"
+        android:id="@+id/join_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/create_group"
         android:layout_marginTop="22dp"
         android:fontFamily="@font/alegreya_sc"
-        android:text="Track Location"
+        android:text="@string/join_group"
+        android:textStyle="bold" />
+
+
+    <Button
+        android:id="@+id/track_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/join_group"
+        android:layout_marginTop="22dp"
+        android:fontFamily="@font/alegreya_sc"
+        android:text="@string/track_location"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/track_location"
+        android:layout_marginTop="22dp"
+        android:fontFamily="@font/alegreya_sc"
+        android:text="@string/logout"
         android:textStyle="bold" />
 
 </RelativeLayout>

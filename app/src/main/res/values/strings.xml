@@ -45,4 +45,12 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="create_group">Create Group</string>
+    <string name="join_group">Join Group</string>
+    <string name="track_location">Track Location</string>
+    <string name="logout">Logout</string>
+    <string name="login">LOGIN</string>
+    <string name="enter_your_username_or_email_id">Enter your Username or Email id</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="already_registered_login_here">Already Registered? Login Here</string>
 </resources>
